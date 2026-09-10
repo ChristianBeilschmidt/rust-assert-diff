@@ -7,7 +7,7 @@ fn main() {
 }
 
 #[component]
-#[allow(clippy::must_use_candidate, reason = "irrelevant forLeptos components")]
+#[allow(clippy::must_use_candidate, reason = "irrelevant for Leptos component")]
 pub fn App() -> impl IntoView {
     let sample_input = r#"left: Object {"$schema": String("https://vega.github.io/schema/vega-lite/v4.json"), "data": Object {"values": Array [Object {"binStart": Number(0.0), "binEnd": Number(2.5), "Frequency": Number(0)}, Object {"binStart": Number(2.5), "binEnd": Number(5.0), "Frequency": Number(0)}, Object {"binStart": Number(5.0),"binEnd": Number(7.5), "Frequency": Number(0)}, Object {"binStart": Number(7.5), "binEnd": Number(10.0), "Frequency": Number(0)}]}, "mark": String("bar"), "encoding": Object {"x": Object {"field": String("binStart"), "bin": Object {"binned": Bool(true), "step": Number(2.5)}, "axis": Object {"title": String("vegetation")}}, "x2": Object {"field": String("binEnd")}, "y": Object {"field": String("Frequency"), "type": String("quantitative")}}} right: Object {"$schema": String("https://vega.github.io/schema/vega-lite/v4.json"), "data": Object {"values": Array [Object {"binStart": Number(0.0), "binEnd": Number(2.5), "Frequency": Number(2)}, Object {"binStart": Number(2.5), "binEnd": Number(5.0), "Frequency": Number(2)}, Object {"binStart": Number(5.0),"binEnd": Number(7.5), "Frequency": Number(2)}, Object {"binStart": Number(7.5), "binEnd": Number(10.0), "Frequency": Number(0)}]}, "mark": String("bar"), "encoding": Object {"x": Object {"field": String("binStart"), "bin": Object {"binned": Bool(true), "step": Number(2.5)}, "axis": Object {"title": String("")}}, "x2": Object {"field": String("binEnd")}, "y": Object {"field": String("Frequency"), "type": String("quantitative")}}}"#;
 
@@ -41,6 +41,8 @@ pub fn App() -> impl IntoView {
 
         (left_lines, right_lines)
     });
+    let left_lines = move || parsed_diff.get().0;
+    let right_lines = move || parsed_diff.get().1;
 
     view! {
         <div class="container">
@@ -52,44 +54,31 @@ pub fn App() -> impl IntoView {
             />
 
             <div class="diff-grid">
-                <div class="diff-pane">
-                    <div class="pane-header left-header">"LEFT (Actual)"</div>
-                    {move || {
-                        let (left, _) = parsed_diff.get();
-                        left.into_iter().enumerate().map(|(idx, (tag, line))| {
-                            let class_name = match tag {
-                                ChangeTag::Delete => "line diff-del",
-                                _ => "line diff-eq",
-                            };
-                            view! {
-                                <div class=class_name>
-                                    <span class="line-num">{idx + 1}</span>
-                                    <span class="line-content">{line}</span>
-                                </div>
-                            }
-                        }).collect_view()
-                    }}
-                </div>
-
-                <div class="diff-pane">
-                    <div class="pane-header right-header">"RIGHT (Expected)"</div>
-                    {move || {
-                        let (_, right) = parsed_diff.get();
-                        right.into_iter().enumerate().map(|(idx, (tag, line))| {
-                            let class_name = match tag {
-                                ChangeTag::Insert => "line diff-add",
-                                _ => "line diff-eq",
-                            };
-                            view! {
-                                <div class=class_name>
-                                    <span class="line-num">{idx + 1}</span>
-                                    <span class="line-content">{line}</span>
-                                </div>
-                            }
-                        }).collect_view()
-                    }}
-                </div>
+                <DiffPane title="LEFT (Actual)" title_classes="left-header" lines=left_lines />
+                <DiffPane title="RIGHT (Expected)" title_classes="right-header" lines=right_lines />
             </div>
+        </div>
+    }
+}
+
+#[component]
+#[allow(clippy::must_use_candidate, reason = "irrelevant for Leptos component")]
+fn DiffPane(
+    title: &'static str,
+    title_classes: &'static str,
+    #[prop(into)] lines: Signal<Vec<(ChangeTag, String)>>,
+) -> impl IntoView {
+    view! {
+        <div class="diff-pane">
+            <div class=format!("pane-header {title_classes}")>{title}</div>
+            {move || lines.get().into_iter().enumerate().map(|(idx, (tag, line))| {
+                view! {
+                    <div class=format!("line {tag_class}", tag_class = tag.class_name())>
+                        <span class="line-num">{idx + 1}</span>
+                        <span class="line-content">{line}</span>
+                    </div>
+                }
+            }).collect_view()}
         </div>
     }
 }
@@ -166,4 +155,19 @@ fn prettify_rust_debug(s: &str) -> String {
         }
     }
     out
+}
+
+/// Trait for styling lines in a diff view.
+trait LineClass {
+    fn class_name(&self) -> &'static str;
+}
+
+impl LineClass for ChangeTag {
+    fn class_name(&self) -> &'static str {
+        match self {
+            ChangeTag::Delete => "diff-del",
+            ChangeTag::Insert => "diff-add",
+            ChangeTag::Equal => "diff-eq",
+        }
+    }
 }
