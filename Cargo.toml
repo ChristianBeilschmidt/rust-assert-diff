@@ -2,8 +2,45 @@
 name = "rust-assert-diff"
 version = "0.1.0"
 edition = "2024"
+description = "A visual diff viewer for Rust assert_eq! panic output"
+license = "Apache-2.0"
+repository = "https://github.com/ChristianBeilschmidt/rust-assert-diff"
+keywords = ["rust", "assert", "diff", "wasm", "web"]
+categories = ["development-tools", "visualization", "web-programming"]
 
 [dependencies]
-leptos = { version = "0.7", features = ["csr"] }
-similar = "2.6"
+leptos = { version = "0.8", features = ["csr"] }
+similar = "3.2"
 console_error_panic_hook = "0.1"
+
+[lints.clippy]
+# Set group priorities to -1 so individual lints (default priority 0) override them cleanly
+cargo = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+
+# disable some pedantic lints
+default_trait_access = "allow"
+missing_errors_doc = "allow"
+module_name_repetitions = "allow"
+non_ascii_literal = "allow"
+option_if_let_else = "allow"
+similar_names = "allow"
+wildcard_imports = "allow"
+
+# enable some restriction lints
+dbg_macro = "warn"
+exit = "warn"
+panic = "warn"
+print_stderr = "warn"
+print_stdout = "warn"
+todo = "warn"
+unimplemented = "warn"
+unreachable = "warn"
+unwrap_used = "warn"
+
+# disable some cargo lints
+multiple_crate_versions = "allow"

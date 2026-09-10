@@ -7,6 +7,7 @@ fn main() {
 }
 
 #[component]
+#[allow(clippy::must_use_candidate, reason = "irrelevant forLeptos components")]
 pub fn App() -> impl IntoView {
     let sample_input = r#"left: Object {"$schema": String("https://vega.github.io/schema/vega-lite/v4.json"), "data": Object {"values": Array [Object {"binStart": Number(0.0), "binEnd": Number(2.5), "Frequency": Number(0)}, Object {"binStart": Number(2.5), "binEnd": Number(5.0), "Frequency": Number(0)}, Object {"binStart": Number(5.0),"binEnd": Number(7.5), "Frequency": Number(0)}, Object {"binStart": Number(7.5), "binEnd": Number(10.0), "Frequency": Number(0)}]}, "mark": String("bar"), "encoding": Object {"x": Object {"field": String("binStart"), "bin": Object {"binned": Bool(true), "step": Number(2.5)}, "axis": Object {"title": String("vegetation")}}, "x2": Object {"field": String("binEnd")}, "y": Object {"field": String("Frequency"), "type": String("quantitative")}}} right: Object {"$schema": String("https://vega.github.io/schema/vega-lite/v4.json"), "data": Object {"values": Array [Object {"binStart": Number(0.0), "binEnd": Number(2.5), "Frequency": Number(2)}, Object {"binStart": Number(2.5), "binEnd": Number(5.0), "Frequency": Number(2)}, Object {"binStart": Number(5.0),"binEnd": Number(7.5), "Frequency": Number(2)}, Object {"binStart": Number(7.5), "binEnd": Number(10.0), "Frequency": Number(0)}]}, "mark": String("bar"), "encoding": Object {"x": Object {"field": String("binStart"), "bin": Object {"binned": Bool(true), "step": Number(2.5)}, "axis": Object {"title": String("")}}, "x2": Object {"field": String("binEnd")}, "y": Object {"field": String("Frequency"), "type": String("quantitative")}}}"#;
 
@@ -99,26 +100,25 @@ fn extract_left_right(input: &str) -> (String, String) {
         .replace("assertion failed: `(left == right)`", "")
         .replace("thread 'main' panicked at", "");
 
-    if let Some(left_pos) = clean_input.find("left:") {
-        if let Some(right_pos) = clean_input.find("right:") {
-            if left_pos < right_pos {
-                let left_str = &clean_input[left_pos + 5..right_pos];
-                let right_str = &clean_input[right_pos + 6..];
+    if let Some(left_pos) = clean_input.find("left:")
+        && let Some(right_pos) = clean_input.find("right:")
+        && left_pos < right_pos
+    {
+        let left_str = &clean_input[left_pos + 5..right_pos];
+        let right_str = &clean_input[right_pos + 6..];
 
-                let right_cleaned = right_str
-                    .split("note:")
-                    .next()
-                    .unwrap_or(right_str)
-                    .split("', ")
-                    .next()
-                    .unwrap_or(right_str);
+        let right_cleaned = right_str
+            .split("note:")
+            .next()
+            .unwrap_or(right_str)
+            .split("', ")
+            .next()
+            .unwrap_or(right_str);
 
-                return (
-                    left_str.trim().trim_matches('`').trim().to_string(),
-                    right_cleaned.trim().trim_matches('`').trim().to_string(),
-                );
-            }
-        }
+        return (
+            left_str.trim().trim_matches('`').trim().to_string(),
+            right_cleaned.trim().trim_matches('`').trim().to_string(),
+        );
     }
     (input.to_string(), input.to_string())
 }
