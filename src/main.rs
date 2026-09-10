@@ -64,7 +64,7 @@ pub fn App() -> impl IntoView {
                             view! {
                                 <div class=class_name>
                                     <span class="line-num">{idx + 1}</span>
-                                    <span>{line}</span>
+                                    <span class="line-content">{line}</span>
                                 </div>
                             }
                         }).collect_view()
@@ -83,7 +83,7 @@ pub fn App() -> impl IntoView {
                             view! {
                                 <div class=class_name>
                                     <span class="line-num">{idx + 1}</span>
-                                    <span>{line}</span>
+                                    <span class="line-content">{line}</span>
                                 </div>
                             }
                         }).collect_view()
