@@ -1,0 +1,6 @@
+# IDE settings
+.vscode
+
+# Build artifacts
+dist
+target

@@ -1,0 +1,9 @@
+[package]
+name = "rust-assert-diff"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+leptos = { version = "0.7", features = ["csr"] }
+similar = "2.6"
+console_error_panic_hook = "0.1"
